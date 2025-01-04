@@ -37,7 +37,7 @@ type ServerInfo struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
 	Host        string `json:"host"`
-	Port        int    `json:"port"`
+    Port        string `json:"port_string"`  // 使用 port_string，永远是 string 类型
 	Mport       string `json:"mport"`
 	Network     string `json:"network"`
 	Type        string `json:"type"`

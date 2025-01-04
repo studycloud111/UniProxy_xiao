@@ -64,14 +64,35 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         in.Options = mixedOptions
     }
 
+    // 处理服务器端口
+    var serverPort uint16
+    if strings.Contains(server.Port, "-") {
+        // 端口段情况，取第一个端口
+        ports := strings.Split(server.Port, "-")
+        if len(ports) > 0 {
+            port, err := strconv.ParseUint(ports[0], 10, 16)
+            if err != nil {
+                return option.Options{}, fmt.Errorf("invalid port number: %s", err)
+            }
+            serverPort = uint16(port)
+        }
+    } else {
+        // 单端口情况
+        port, err := strconv.ParseUint(server.Port, 10, 16)
+        if err != nil {
+            return option.Options{}, fmt.Errorf("invalid port number: %s", err)
+        }
+        serverPort = uint16(port)
+    }
+
     // outbound 配置
     var out option.Outbound
     out.Tag = "proxy"
     so := option.ServerOptions{
         Server:     server.Host,
-        ServerPort: uint16(server.Port),
+        ServerPort: serverPort,
     }
-
+    
     // 根据服务器类型配置
     switch server.Type {
     case "vmess":
