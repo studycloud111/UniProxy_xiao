@@ -6,7 +6,7 @@ import (
     "github.com/sagernet/sing-box/adapter"
     "github.com/sagernet/sing-box/experimental"
     "github.com/sagernet/sing-box/option"
-    "github.com/sagernet/sing/common/debug"
+    slog "github.com/sagernet/sing-box/log"  // 使用 sing-box 的 log 包
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
     log "github.com/sirupsen/logrus"
@@ -25,8 +25,8 @@ var (
 var client *box.Box
 
 func init() {
-    // 注册 V2Ray API 服务器构造函数
-    experimental.RegisterV2RayServerConstructor(func(logger log.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
+    // 修改为正确的 logger 类型
+    experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
         return nil, nil
     })
 }
@@ -42,9 +42,8 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-    // 创建基础上下文
+    // 只使用基础 context
     ctx := context.Background()
-    ctx = debug.WithContext(ctx)
     
     client, err = box.New(box.Options{
         Context: ctx,
