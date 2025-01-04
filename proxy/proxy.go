@@ -5,7 +5,6 @@ import (
     box "github.com/sagernet/sing-box"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
-    log "github.com/sirupsen/logrus"
 )
 
 var (
