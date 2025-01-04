@@ -97,24 +97,22 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 Type: server.Network,
             }
             
-            switch server.Network {
-            switch server.Network {
-			case "ws":
-			    u, err := url.Parse(server.NetworkSettings.Path)
-			    if err != nil {
-			        return option.Options{}, err
-			    }
-			    ed, _ := strconv.Atoi(u.Query().Get("ed"))
-			    transport.WebsocketOptions = option.V2RayWebsocketOptions{  // 移除 &
-			        Path: u.Path,
-			        MaxEarlyData: uint32(ed),
-			        EarlyDataHeaderName: "Sec-WebSocket-Protocol",
-			    }
-			case "grpc":
-			    transport.GRPCOptions = option.V2RayGRPCOptions{  // 移除 &
-			        ServiceName: server.ServerName,
-			    }
-			}
+            if server.Network == "ws" {
+                u, err := url.Parse(server.NetworkSettings.Path)
+                if err != nil {
+                    return option.Options{}, err
+                }
+                ed, _ := strconv.Atoi(u.Query().Get("ed"))
+                transport.WebsocketOptions = option.V2RayWebsocketOptions{
+                    Path: u.Path,
+                    MaxEarlyData: uint32(ed),
+                    EarlyDataHeaderName: "Sec-WebSocket-Protocol",
+                }
+            } else if server.Network == "grpc" {
+                transport.GRPCOptions = option.V2RayGRPCOptions{
+                    ServiceName: server.ServerName,
+                }
+            }
             
             vmessOptions.Transport = transport
         }
@@ -142,20 +140,19 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 Type: server.Network,
             }
             
-            switch server.Network {
-            case "ws":
+            if server.Network == "ws" {
                 u, err := url.Parse(server.NetworkSettings.Path)
                 if err != nil {
                     return option.Options{}, err
                 }
                 ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
+                transport.WebsocketOptions = option.V2RayWebsocketOptions{
                     Path: u.Path,
                     MaxEarlyData: uint32(ed),
                     EarlyDataHeaderName: "Sec-WebSocket-Protocol",
                 }
-            case "grpc":
-                transport.GRPCOptions = &option.V2RayGRPCOptions{
+            } else if server.Network == "grpc" {
+                transport.GRPCOptions = option.V2RayGRPCOptions{
                     ServiceName: server.ServerName,
                 }
             }
@@ -223,20 +220,19 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 Type: server.Network,
             }
             
-            switch server.Network {
-            case "ws":
+            if server.Network == "ws" {
                 u, err := url.Parse(server.NetworkSettings.Path)
                 if err != nil {
                     return option.Options{}, err
                 }
                 ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
+                transport.WebsocketOptions = option.V2RayWebsocketOptions{
                     Path: u.Path,
                     MaxEarlyData: uint32(ed),
                     EarlyDataHeaderName: "Sec-WebSocket-Protocol",
                 }
-            case "grpc":
-                transport.GRPCOptions = &option.V2RayGRPCOptions{
+            } else if server.Network == "grpc" {
+                transport.GRPCOptions = option.V2RayGRPCOptions{
                     ServiceName: server.ServerName,
                 }
             }
@@ -281,14 +277,12 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 DownMbps: server.DownMbps,
             }
             
-            // TLS 配置
             hy2Options.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 Insecure:   server.AllowInsecure == 1,
                 ServerName: server.ServerName,
             }
 
-            // 根据 Mport 的格式决定端口配置
             if strings.Contains(server.Mport, "-") {
                 hy2Options.ServerPorts = badoption.Listable[string]{server.Mport}
             } else {
@@ -334,7 +328,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 
     return option.Options{
         Log: &option.LogOptions{
-            Level: "debug",  // 设置为debug级别以便排查问题
+            Level: "debug",
         },
         Inbounds: []option.Inbound{
             in,
