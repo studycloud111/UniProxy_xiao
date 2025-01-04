@@ -75,7 +75,7 @@ func GetServers() ([]ServerInfo, error) {
 		c := clients.Next()
 		rsp, err := c.R().
 			SetHeader("If-None-Match", etag).
-			Get("api/v1/user/server/fetch")
+			Get("post/v3/user/server/fetch")
 		if err != nil {
 			return err
 		}
