@@ -24,9 +24,22 @@ var (
 
 var client *box.Box
 
-// 实现一个简单的 V2Ray 服务器
+// 实现统计服务
+type statsService struct {
+}
+
+func (s *statsService) QueryStats(name string, reset bool) int64 {
+    return 0
+}
+
+func (s *statsService) GetStats() map[string]int64 {
+    return nil
+}
+
+// 实现 V2Ray 服务器
 type v2rayServer struct {
     logger slog.Logger
+    stats  *statsService
 }
 
 func (s *v2rayServer) Name() string {
@@ -41,13 +54,19 @@ func (s *v2rayServer) Close() error {
     return nil
 }
 
-func (s *v2rayServer) StatsService() adapter.V2RayStatsService {
-    return nil
+func (s *v2rayServer) StatsService() adapter.StatsService {
+    if s.stats == nil {
+        s.stats = &statsService{}
+    }
+    return s.stats
 }
 
 func init() {
     experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
-        return &v2rayServer{logger: logger}, nil
+        return &v2rayServer{
+            logger: logger,
+            stats:  &statsService{},
+        }, nil
     })
 }
 
