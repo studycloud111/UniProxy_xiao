@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"fmt"  // 添加这一行
 
 	"github.com/avast/retry-go/v4"
 	"github.com/go-resty/resty/v2"
