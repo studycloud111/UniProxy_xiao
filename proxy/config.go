@@ -362,9 +362,9 @@ func getRules(global bool) (*option.RouteOptions, error) {
             {
                 Type: C.RuleTypeDefault,
                 DefaultOptions: option.DefaultRule{
-                    IPRuleSet:     option.Listable[string]{"cn", "private"},
-                    DomainRuleSet: option.Listable[string]{"cn"},
-                    Action:        "direct",
+                    GeoIP:   []string{"cn", "private"},
+                    Geosite: []string{"cn"},
+                    Target:  "direct",
                 },
             },
         },
