@@ -6,7 +6,10 @@ import (
     "github.com/sagernet/sing-box/adapter"
     "github.com/sagernet/sing-box/experimental"
     "github.com/sagernet/sing-box/option"
-    slog "github.com/sagernet/sing-box/log"  // 使用 sing-box 的 log 包
+    slog "github.com/sagernet/sing-box/log"
+    E "github.com/sagernet/sing/common/exceptions"
+    "github.com/sagernet/sing/common/logger"
+    N "github.com/sagernet/sing/common/network"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -24,10 +27,23 @@ var (
 var client *box.Box
 
 func init() {
-    // 修改为正确的 logger 类型
+    // 实现一个简单的 V2Ray 服务器
     experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
-        return nil, nil
+        return &v2rayServer{logger: logger}, nil
     })
+}
+
+// 实现一个简单的 V2Ray 服务器
+type v2rayServer struct {
+    logger slog.Logger
+}
+
+func (s *v2rayServer) Start() error {
+    return nil
+}
+
+func (s *v2rayServer) Close() error {
+    return nil
 }
 
 func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
@@ -41,20 +57,23 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-    // 只使用基础 context
-    ctx := context.Background()
+    // 创建并配置上下文
+    baseCtx := context.Background()
+    ctx := adapter.WithContext(baseCtx)
     
+    // 创建实例
     client, err = box.New(box.Options{
         Context: ctx,
         Options: c,
     })
     if err != nil {
-        return err
+        return E.Cause(err, "create client")
     }
     
+    // 启动服务
     err = client.Start()
     if err != nil {
-        return err
+        return E.Cause(err, "start client")
     }
     
     Running = true
