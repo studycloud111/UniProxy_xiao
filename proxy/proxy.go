@@ -4,9 +4,11 @@ import (
     "context"
 
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing-box/outbound"
-    "github.com/sagernet/sing-box/inbound"
-    "github.com/sagernet/sing-box/endpoint"
+    "github.com/sagernet/sing-box/adapter"
+    "github.com/sagernet/sing-box/option"
+    "github.com/sagernet/sing/common"
+    "github.com/sagernet/sing/service"
+    "github.com/sagernet/sing/common/logger"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -20,6 +22,25 @@ var (
     DataPath    string
     ResUrl      string
 )
+
+// 实现必要的 Registry 接口
+type emptyRegistry struct{}
+
+func (r *emptyRegistry) Create(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Endpoint, error) {
+    return nil, nil
+}
+
+func (r *emptyRegistry) CreateInbound(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Inbound, error) {
+    return nil, nil
+}
+
+func (r *emptyRegistry) CreateOutbound(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Outbound, error) {
+    return nil, nil
+}
+
+func (r *emptyRegistry) CreateOptions(options option.Options) (option.Options, error) {
+    return options, nil
+}
 
 var client *box.Box
 
@@ -35,14 +56,13 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
 
     // 创建基础 context
     ctx := context.Background()
-
-    // 使用正确的 registry 实现
-    inboundRegistry := inbound.NewRegistry()
-    outboundRegistry := outbound.NewRegistry()
-    endpointRegistry := endpoint.NewRegistry()
     
-    // 使用 sing-box 的 Context 函数设置 registry
-    ctx = box.Context(ctx, inboundRegistry, outboundRegistry, endpointRegistry)
+    // 创建空的 registry 实现
+    registry := &emptyRegistry{}
+    
+    // 设置 registry
+    ctx = service.ContextWithRegistry(ctx, service.NewRegistry())
+    ctx = box.Context(ctx, registry, registry, registry)
 
     // 创建 box 实例
     client, err = box.New(box.Options{
