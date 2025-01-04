@@ -21,9 +21,11 @@ jobs:
       with:
         go-version: '1.23.1'
 
+    - name: Make build.sh executable
+      run: chmod +x build.sh
+
     - name: Build
-      run: |
-        ./build.sh
+      run: ./build.sh
     
     - name: Create ZIP archive
       shell: bash
