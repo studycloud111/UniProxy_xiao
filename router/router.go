@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/wyx2685/UniProxy/conf"
-	"github.com/wyx2685/UniProxy/geo"
-	"github.com/wyx2685/UniProxy/handle"
-	"github.com/wyx2685/UniProxy/middleware"
+	"github.com/studycloud111/UniProxy_xiao/conf"
+	"github.com/studycloud111/UniProxy_xiao/geo"
+	"github.com/studycloud111/UniProxy_xiao/handle"
+	"github.com/studycloud111/UniProxy_xiao/middleware"
 )
 
 var engine *gin.Engine
