@@ -1,4 +1,4 @@
-module github.com/wyx2685/UniProxy
+module github.com/studycloud111/UniProxy_xiao
 
 go 1.23.1
 
