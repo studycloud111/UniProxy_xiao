@@ -33,7 +33,7 @@ func (s *v2rayServer) Name() string {
     return "v2ray"
 }
 
-func (s *v2rayServer) Start() error {
+func (s *v2rayServer) Start(stage adapter.StartStage) error {
     return nil
 }
 
@@ -58,10 +58,8 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-    // 使用基础上下文
     ctx := context.Background()
     
-    // 创建实例
     client, err = box.New(box.Options{
         Context: ctx,
         Options: c,
@@ -70,7 +68,6 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return E.Cause(err, "create client")
     }
     
-    // 启动服务
     err = client.Start()
     if err != nil {
         return E.Cause(err, "start client")
