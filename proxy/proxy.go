@@ -4,8 +4,9 @@ import (
     "context"
 
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing/service"
-    "github.com/sagernet/sing-box/adapter"
+    "github.com/sagernet/sing-box/outbound"
+    "github.com/sagernet/sing-box/inbound"
+    "github.com/sagernet/sing-box/endpoint"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -34,13 +35,11 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
 
     // 创建基础 context
     ctx := context.Background()
-    // 创建默认 registry
-    ctx = service.ContextWithDefaultRegistry(ctx)
-    
-    // 创建并注册必要的 registry
-    inboundRegistry := service.NewRegistry()
-    outboundRegistry := service.NewRegistry()
-    endpointRegistry := service.NewRegistry()
+
+    // 使用正确的 registry 实现
+    inboundRegistry := inbound.NewRegistry()
+    outboundRegistry := outbound.NewRegistry()
+    endpointRegistry := endpoint.NewRegistry()
     
     // 使用 sing-box 的 Context 函数设置 registry
     ctx = box.Context(ctx, inboundRegistry, outboundRegistry, endpointRegistry)
