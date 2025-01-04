@@ -341,6 +341,14 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             },
         },
         Route: r,
+        Experimental: &option.ExperimentalOptions{
+            V2RayAPI: &option.V2RayAPIOptions{
+                Listen: "127.0.0.1:0",  // 使用随机端口
+                Stats: &option.V2RayStatsServiceOptions{
+                    Enabled: true,
+                },
+            },
+        },
     }, nil
 }
 
