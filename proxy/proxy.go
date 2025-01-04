@@ -4,6 +4,7 @@ import (
     "context"
     box "github.com/sagernet/sing-box"
     "github.com/sagernet/sing-box/adapter"
+    "github.com/sagernet/sing-box/common/v2ray"  // 添加这个
     "github.com/sagernet/sing-box/experimental"
     "github.com/sagernet/sing-box/option"
     slog "github.com/sagernet/sing-box/log"
