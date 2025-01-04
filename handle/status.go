@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/wyx2685/UniProxy/common/balance"
-	"github.com/wyx2685/UniProxy/conf"
-	"github.com/wyx2685/UniProxy/proxy"
-	"github.com/wyx2685/UniProxy/v2b"
+	"github.com/studycloud111/UniProxy_xiao/common/balance"
+	"github.com/studycloud111/UniProxy_xiao/conf"
+	"github.com/studycloud111/UniProxy_xiao/proxy"
+	"github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
 type initParamsRequest struct {

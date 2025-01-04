@@ -14,9 +14,9 @@ import (
 
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
-	"github.com/wyx2685/UniProxy/common/file"
-	"github.com/wyx2685/UniProxy/geo"
-	"github.com/wyx2685/UniProxy/v2b"
+	"github.com/studycloud111/UniProxy_xiao/common/file"
+	"github.com/studycloud111/UniProxy_xiao/geo"
+	"github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
 func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, error) {

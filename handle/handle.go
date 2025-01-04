@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/wyx2685/UniProxy/common/balance"
-	"github.com/wyx2685/UniProxy/conf"
+	"github.com/studycloud111/UniProxy_xiao/common/balance"
+	"github.com/studycloud111/UniProxy_xiao/conf"
 )
 
 var urlBalance *balance.List[string]

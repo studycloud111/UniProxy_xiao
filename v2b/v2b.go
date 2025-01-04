@@ -7,7 +7,7 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/go-resty/resty/v2"
-	"github.com/wyx2685/UniProxy/common/balance"
+	"github.com/studycloud111/UniProxy_xiao/common/balance"
 )
 
 var (

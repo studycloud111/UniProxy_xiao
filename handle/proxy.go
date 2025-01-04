@@ -3,7 +3,7 @@ package handle
 import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/wyx2685/UniProxy/proxy"
+	"github.com/studycloud111/UniProxy_xiao/proxy"
 )
 
 type StartUniProxyRequest struct {

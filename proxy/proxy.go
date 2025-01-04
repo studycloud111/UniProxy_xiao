@@ -4,8 +4,8 @@ import (
 	"context"
 
 	box "github.com/sagernet/sing-box"
-	"github.com/wyx2685/UniProxy/common/sysproxy"
-	"github.com/wyx2685/UniProxy/v2b"
+	"github.com/studycloud111/UniProxy_xiao/common/sysproxy"
+	"github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
 var (

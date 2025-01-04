@@ -3,7 +3,7 @@ package proxy
 import (
 	"testing"
 
-	"github.com/wyx2685/UniProxy/v2b"
+	"github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
 func TestStartProxy(t *testing.T) {
