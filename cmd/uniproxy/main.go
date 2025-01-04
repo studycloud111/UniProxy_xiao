@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/wyx2685/UniProxy/conf"
-	"github.com/wyx2685/UniProxy/proxy"
-	"github.com/wyx2685/UniProxy/router"
+	"github.com/studycloud111/UniProxy_xiao/conf"
+	"github.com/studycloud111/UniProxy_xiao/proxy"
+	"github.com/studycloud111/UniProxy_xiao/router"
 )
 
 var host = flag.String("host", "127.0.0.1", "host")
