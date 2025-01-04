@@ -25,7 +25,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
     var in option.Inbound
     if TunMode {
         in.Type = "tun"
-        // 创建 TUN 选项
         tunOptions := option.TunInboundOptions{
             MTU:         9000,
             AutoRoute:   true,
@@ -33,26 +32,21 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Stack:       "gvisor",
         }
         
-        // 设置地址
         prefix4, _ := netip.ParsePrefix("172.19.0.1/30")
         prefix6, _ := netip.ParsePrefix("fdfe:dcba:9876::1/126")
-        tunOptions.Address = []netip.Prefix{prefix4}
-        tunOptions.Address = append(tunOptions.Address, prefix6)
+        tunOptions.Address = []netip.Prefix{prefix4, prefix6}
         
-        // 设置路由
         route4_1, _ := netip.ParsePrefix("0.0.0.0/1")
         route4_2, _ := netip.ParsePrefix("128.0.0.0/1")
         route6_1, _ := netip.ParsePrefix("::/1")
         route6_2, _ := netip.ParsePrefix("8000::/1")
         tunOptions.RouteAddress = []netip.Prefix{route4_1, route4_2, route6_1, route6_2}
         
-        // 设置选项
         in.Options = tunOptions
     } else {
         in.Type = "mixed"
         addr := netip.MustParseAddr("127.0.0.1")
         
-        // 创建混合选项
         mixedOptions := option.HTTPMixedInboundOptions{
             ListenOptions: option.ListenOptions{
                 Listen:     (*badoption.Addr)(&addr),
@@ -60,14 +54,11 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             },
         }
         
-        // 设置选项
         in.Options = mixedOptions
     }
 
-    // 处理服务器端口
     var serverPort uint16
     if strings.Contains(server.Port, "-") {
-        // 端口段情况，取第一个端口
         ports := strings.Split(server.Port, "-")
         if len(ports) > 0 {
             port, err := strconv.ParseUint(ports[0], 10, 16)
@@ -77,7 +68,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             serverPort = uint16(port)
         }
     } else {
-        // 单端口情况
         port, err := strconv.ParseUint(server.Port, 10, 16)
         if err != nil {
             return option.Options{}, fmt.Errorf("invalid port number: %s", err)
@@ -85,7 +75,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         serverPort = uint16(port)
     }
 
-    // outbound 配置
     var out option.Outbound
     out.Tag = "proxy"
     so := option.ServerOptions{
@@ -93,7 +82,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         ServerPort: serverPort,
     }
     
-    // 根据服务器类型配置
     switch server.Type {
     case "vmess":
         out.Type = "vmess"
@@ -103,8 +91,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Security:           "auto",
             AuthenticatedLength: true,
         }
-        
-        // Transport 配置
+
         if server.Network != "" && server.Network != "tcp" {
             transport := &option.V2RayTransportOptions{
                 Type: server.Network,
@@ -117,19 +104,22 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     return option.Options{}, err
                 }
                 ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions.Path = u.Path
-                transport.WebsocketOptions.MaxEarlyData = uint32(ed)
-                transport.WebsocketOptions.EarlyDataHeaderName = "Sec-WebSocket-Protocol"
+                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
+                    Path: u.Path,
+                    MaxEarlyData: uint32(ed),
+                    EarlyDataHeaderName: "Sec-WebSocket-Protocol",
+                }
             case "grpc":
-                transport.GRPCOptions.ServiceName = server.ServerName
+                transport.GRPCOptions = &option.V2RayGRPCOptions{
+                    ServiceName: server.ServerName,
+                }
             }
             
             vmessOptions.Transport = transport
         }
-        
-        // TLS 配置
+
         if server.Tls == 1 {
-            vmessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+            vmessOptions.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.TlsSettings.AllowInsecure != "0",
@@ -146,7 +136,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Flow:         server.Flow,
         }
 
-        // Transport 配置
         if server.Network != "" && server.Network != "tcp" {
             transport := &option.V2RayTransportOptions{
                 Type: server.Network,
@@ -159,39 +148,39 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     return option.Options{}, err
                 }
                 ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions.Path = u.Path
-                transport.WebsocketOptions.MaxEarlyData = uint32(ed)
-                transport.WebsocketOptions.EarlyDataHeaderName = "Sec-WebSocket-Protocol"
+                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
+                    Path: u.Path,
+                    MaxEarlyData: uint32(ed),
+                    EarlyDataHeaderName: "Sec-WebSocket-Protocol",
+                }
             case "grpc":
-                transport.GRPCOptions.ServiceName = server.ServerName
+                transport.GRPCOptions = &option.V2RayGRPCOptions{
+                    ServiceName: server.ServerName,
+                }
             }
             
             vlessOptions.Transport = transport
         }
 
-        // TLS 配置
-        switch server.Tls {
-        case 1:
-            vlessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+        if server.Tls >= 1 {
+            tlsOptions := &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.TlsSettings.AllowInsecure != "0",
             }
-        case 2:
-            vlessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
-                Enabled:    true,
-                ServerName: server.TlsSettings.ServerName,
-                Insecure:   server.TlsSettings.AllowInsecure == "1",
-                UTLS: &option.OutboundUTLSOptions{
+            
+            if server.Tls == 2 {
+                tlsOptions.UTLS = &option.OutboundUTLSOptions{
                     Enabled:     true,
                     Fingerprint: server.TlsSettings.Fingerprint,
-                },
-                Reality: &option.OutboundRealityOptions{
+                }
+                tlsOptions.Reality = &option.OutboundRealityOptions{
                     Enabled:   true,
                     ShortID:   server.TlsSettings.ShortId,
                     PublicKey: server.TlsSettings.PublicKey,
-                },
+                }
             }
+            vlessOptions.TLS = tlsOptions
         }
 
         out.Options = vlessOptions
@@ -228,7 +217,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Password:     uuid,
         }
 
-        // Transport 配置
         if server.Network != "" && server.Network != "tcp" {
             transport := &option.V2RayTransportOptions{
                 Type: server.Network,
@@ -241,18 +229,22 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     return option.Options{}, err
                 }
                 ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions.Path = u.Path
-                transport.WebsocketOptions.MaxEarlyData = uint32(ed)
-                transport.WebsocketOptions.EarlyDataHeaderName = "Sec-WebSocket-Protocol"
+                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
+                    Path: u.Path,
+                    MaxEarlyData: uint32(ed),
+                    EarlyDataHeaderName: "Sec-WebSocket-Protocol",
+                }
             case "grpc":
-                transport.GRPCOptions.ServiceName = server.ServerName
+                transport.GRPCOptions = &option.V2RayGRPCOptions{
+                    ServiceName: server.ServerName,
+                }
             }
             
             trojanOptions.Transport = transport
         }
 
-        if server.Tls != 0 {
-            trojanOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+        if server.Tls == 1 {
+            trojanOptions.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.Allow_Insecure == 1,
@@ -277,20 +269,19 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     Password: server.Hy2Obfs,
                 }
             }
-
             
-    		hy2Options := option.Hysteria2OutboundOptions{
-    		    ServerOptions: option.ServerOptions{
-    		        Server: server.Host,
-    		    },
-    		    Obfs:     obfs,
-    		    Password: uuid,
-    		    UpMbps:     server.UpMbps,
-    		    DownMbps:   server.DownMbps,
-    		}
+            hy2Options := option.Hysteria2OutboundOptions{
+                ServerOptions: option.ServerOptions{
+                    Server: server.Host,
+                },
+                Obfs:     obfs,
+                Password: uuid,
+                UpMbps:   server.UpMbps,
+                DownMbps: server.DownMbps,
+            }
             
             // TLS 配置
-            hy2Options.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+            hy2Options.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 Insecure:   server.AllowInsecure == 1,
                 ServerName: server.ServerName,
@@ -306,7 +297,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 
             out.Options = hy2Options
 
-        } else if server.HysteriaVersion == 1 {
+        } else {
             out.Type = "hysteria"
             
             hy1Options := option.HysteriaOutboundOptions{
@@ -319,14 +310,12 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 AuthString: uuid,
             }
 
-            // TLS 配置
-            hy1Options.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+            hy1Options.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 Insecure:   server.AllowInsecure == 1,
                 ServerName: server.ServerName,
             }
 
-            // 端口配置 (Hysteria v1 只使用单个端口)
             port, _ := strconv.ParseUint(server.Mport, 10, 16)
             hy1Options.ServerOptions.ServerPort = uint16(port)
 
@@ -337,7 +326,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         return option.Options{}, errors.New("server type is unknown")
     }
 
-    // 获取路由规则
     r, err := getRules(GlobalMode)
     if err != nil {
         return option.Options{}, fmt.Errorf("get rules error: %s", err)
@@ -345,7 +333,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 
     return option.Options{
         Log: &option.LogOptions{
-            Level: "error",
+            Level: "debug",  // 设置为debug级别以便排查问题
         },
         Inbounds: []option.Inbound{
             in,
