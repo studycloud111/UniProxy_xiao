@@ -26,18 +26,14 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     }
     SystemProxy = true
     
-    // 获取配置
     c, err := GetSingBoxConfig(uuid, server)
     if err != nil {
         return err
     }
     
-    // 创建带有 logger 的 context
-    logger := log.NewDefaultLogger()
+    // 使用 logrus 替代
     ctx := context.Background()
-    ctx = log.ContextWithLogger(ctx, logger)
     
-    // 创建客户端
     client, err = box.New(box.Options{
         Context: ctx,
         Options: c,
@@ -46,11 +42,14 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-    // 启动服务
     err = client.Start()
     if err != nil {
         return err
     }
+    
+    Running = true
+    return nil
+}
     
     Running = true
     return nil

@@ -98,22 +98,23 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             }
             
             switch server.Network {
-            case "ws":
-                u, err := url.Parse(server.NetworkSettings.Path)
-                if err != nil {
-                    return option.Options{}, err
-                }
-                ed, _ := strconv.Atoi(u.Query().Get("ed"))
-                transport.WebsocketOptions = &option.V2RayWebsocketOptions{
-                    Path: u.Path,
-                    MaxEarlyData: uint32(ed),
-                    EarlyDataHeaderName: "Sec-WebSocket-Protocol",
-                }
-            case "grpc":
-                transport.GRPCOptions = &option.V2RayGRPCOptions{
-                    ServiceName: server.ServerName,
-                }
-            }
+            switch server.Network {
+			case "ws":
+			    u, err := url.Parse(server.NetworkSettings.Path)
+			    if err != nil {
+			        return option.Options{}, err
+			    }
+			    ed, _ := strconv.Atoi(u.Query().Get("ed"))
+			    transport.WebsocketOptions = option.V2RayWebsocketOptions{  // 移除 &
+			        Path: u.Path,
+			        MaxEarlyData: uint32(ed),
+			        EarlyDataHeaderName: "Sec-WebSocket-Protocol",
+			    }
+			case "grpc":
+			    transport.GRPCOptions = option.V2RayGRPCOptions{  // 移除 &
+			        ServiceName: server.ServerName,
+			    }
+			}
             
             vmessOptions.Transport = transport
         }
