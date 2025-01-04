@@ -233,7 +233,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 				HysteriaOptions: option.HysteriaOutboundOptions{
 					ServerOptions: option.ServerOptions{
 						Server:     server.Host,
-						ServerPort: uint16(server.Port),
+						server_ports: uint16(server.Mport),
 					},
 					UpMbps:     server.UpMbps,
 					DownMbps:   server.DownMbps,
