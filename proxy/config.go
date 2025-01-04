@@ -108,7 +108,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         
         // TLS 配置
         if server.Tls == 1 {
-            vmessOptions.TLS = &option.OutboundTLSOptions{
+            vmessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.TlsSettings.AllowInsecure != "0",
@@ -151,13 +151,13 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         // TLS 配置
         switch server.Tls {
         case 1:
-            vlessOptions.TLS = &option.OutboundTLSOptions{
+            vlessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.TlsSettings.AllowInsecure != "0",
             }
         case 2:
-            vlessOptions.TLS = &option.OutboundTLSOptions{
+            vlessOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.TlsSettings.ServerName,
                 Insecure:   server.TlsSettings.AllowInsecure == "1",
@@ -231,7 +231,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         }
 
         if server.Tls != 0 {
-            trojanOptions.TLS = &option.OutboundTLSOptions{
+            trojanOptions.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
                 Insecure:   server.Allow_Insecure == 1,
@@ -263,11 +263,13 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 },
                 Obfs:     obfs,
                 Password: uuid,
-                TLS: &option.OutboundTLSOptions{
-                    Enabled:    true,
-                    Insecure:   server.AllowInsecure == 1,
-                    ServerName: server.ServerName,
-                },
+            }
+            
+            // TLS 配置
+            hy2Options.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+                Enabled:    true,
+                Insecure:   server.AllowInsecure == 1,
+                ServerName: server.ServerName,
             }
 
             // 根据 Mport 的格式决定端口配置
@@ -291,20 +293,18 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 DownMbps:   server.DownMbps,
                 Obfs:       server.ServerKey,
                 AuthString: uuid,
-                TLS: &option.OutboundTLSOptions{
-                    Enabled:    true,
-                    Insecure:   server.AllowInsecure == 1,
-                    ServerName: server.ServerName,
-                },
             }
 
-            // 根据 Mport 的格式决定端口配置
-            if strings.Contains(server.Mport, "-") {
-                hy1Options.ServerPorts = badoption.Listable[string]{server.Mport}
-            } else {
-                port, _ := strconv.ParseUint(server.Mport, 10, 16)
-                hy1Options.ServerOptions.ServerPort = uint16(port)
+            // TLS 配置
+            hy1Options.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{
+                Enabled:    true,
+                Insecure:   server.AllowInsecure == 1,
+                ServerName: server.ServerName,
             }
+
+            // 端口配置 (Hysteria v1 只使用单个端口)
+            port, _ := strconv.ParseUint(server.Mport, 10, 16)
+            hy1Options.ServerOptions.ServerPort = uint16(port)
 
             out.Options = hy1Options
         }
@@ -362,9 +362,9 @@ func getRules(global bool) (*option.RouteOptions, error) {
             {
                 Type: C.RuleTypeDefault,
                 DefaultOptions: option.DefaultRule{
-                    GeoIP: []string{"cn", "private"},
-                    Geosite: []string{"cn"},
-                    Outbound: "direct",
+                    IPRuleSet:     option.Listable[string]{"cn", "private"},
+                    DomainRuleSet: option.Listable[string]{"cn"},
+                    Action:        "direct",
                 },
             },
         },
