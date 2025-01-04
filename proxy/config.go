@@ -362,9 +362,13 @@ func getRules(global bool) (*option.RouteOptions, error) {
             {
                 Type: C.RuleTypeDefault,
                 DefaultOptions: option.DefaultRule{
-                    GeoIP:   []string{"cn", "private"},
-                    Geosite: []string{"cn"},
-                    Target:  "direct",
+                    RawDefaultRule: option.RawDefaultRule{
+                        GeoIP:   badoption.Listable[string]{"cn", "private"},
+                        Geosite: badoption.Listable[string]{"cn"},
+                    },
+                    RuleAction: option.RuleAction{
+                        Action: "direct",
+                    },
                 },
             },
         },
