@@ -2,11 +2,9 @@ package proxy
 
 import (
     "context"
-    "net/netip"  // 添加这个导入
 
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing-box/option"  // 添加这个导入
-    "github.com/sagernet/sing/service"     // 添加这个导入
+    "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -33,12 +31,12 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
 
-    // 创建带 registry 的 context
+    // 创建基础 context
     ctx, cancel := context.WithCancel(context.Background())
     defer cancel()
 
     // 创建一个新的 registry
-    registry := service.NewRegistry(ctx)
+    registry := service.NewRegistry()
 
     // 将 registry 添加到 context
     ctx = service.ContextWithRegistry(ctx, registry)
