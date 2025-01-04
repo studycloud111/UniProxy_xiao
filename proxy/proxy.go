@@ -41,6 +41,10 @@ func (s *v2rayServer) Close() error {
     return nil
 }
 
+func (s *v2rayServer) StatsService() adapter.V2RayStatsService {
+    return nil
+}
+
 func init() {
     experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
         return &v2rayServer{logger: logger}, nil
