@@ -6,9 +6,7 @@ import (
     box "github.com/sagernet/sing-box"
     "github.com/sagernet/sing-box/adapter"
     "github.com/sagernet/sing-box/option"
-    "github.com/sagernet/sing/common"
     "github.com/sagernet/sing/service"
-    "github.com/sagernet/sing/common/logger"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -26,20 +24,20 @@ var (
 // 实现必要的 Registry 接口
 type emptyRegistry struct{}
 
-func (r *emptyRegistry) Create(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Endpoint, error) {
+func (r *emptyRegistry) Create(ctx context.Context, router adapter.Router, log adapter.Logger, tag string, options option.Options) (adapter.Endpoint, error) {
     return nil, nil
 }
 
-func (r *emptyRegistry) CreateInbound(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Inbound, error) {
+func (r *emptyRegistry) CreateInbound(ctx context.Context, router adapter.Router, log adapter.Logger, tag string, options option.Options) (adapter.Inbound, error) {
     return nil, nil
 }
 
-func (r *emptyRegistry) CreateOutbound(ctx context.Context, router adapter.Router, logger service.Logger, tag string, options option.Options) (adapter.Outbound, error) {
+func (r *emptyRegistry) CreateOutbound(ctx context.Context, router adapter.Router, log adapter.Logger, tag string, options option.Options) (adapter.Outbound, error) {
     return nil, nil
 }
 
-func (r *emptyRegistry) CreateOptions(options option.Options) (option.Options, error) {
-    return options, nil
+func (r *emptyRegistry) CreateOptions(name string) (any, bool) {
+    return nil, false
 }
 
 var client *box.Box
