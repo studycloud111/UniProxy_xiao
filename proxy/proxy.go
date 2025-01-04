@@ -9,7 +9,6 @@ import (
     slog "github.com/sagernet/sing-box/log"  // 使用 sing-box 的 log 包
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
-    log "github.com/sirupsen/logrus"
 )
 
 var (
