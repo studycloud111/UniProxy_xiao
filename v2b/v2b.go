@@ -70,38 +70,43 @@ type ServerInfo struct {
 }
 
 func GetServers() ([]ServerInfo, error) {
-	var r *resty.Response
-	err := retry.Do(func() error {
-		c := clients.Next()
-		rsp, err := c.R().
-			SetHeader("If-None-Match", etag).
-			Get("post/v3/user/server/fetch")
-		if err != nil {
-			return err
-		}
-		if rsp.StatusCode() == 304 {
-			return nil
-		}
-		etag = rsp.Header().Get("ETag")
-		if rsp.StatusCode() != 200 {
-			return nil
-		}
-		r = rsp
-		return nil
-	}, retry.Attempts(3))
-	if err != nil {
-		return nil, err
-	}
-	if r.StatusCode() == 304 {
-		return nil, nil
-	}
-	rsp := &ServerFetchRsp{}
-	err = json.Unmarshal(r.Body(), rsp)
-	if err != nil {
-		return nil, err
-	}
-	if len(rsp.Data) == 0 {
-		return nil, errors.New("no servers")
-	}
-	return rsp.Data, nil
+    var r *resty.Response
+    err := retry.Do(func() error {
+        c := clients.Next()
+        rsp, err := c.R().
+            SetHeader("If-None-Match", etag).
+            Get("post/v3/user/server/fetch")
+        if err != nil {
+            return err
+        }
+        if rsp.StatusCode() == 304 {
+            return nil
+        }
+        etag = rsp.Header().Get("ETag")
+        if rsp.StatusCode() != 200 {
+            return fmt.Errorf("unexpected status code: %d", rsp.StatusCode()) // 添加错误返回
+        }
+        r = rsp
+        return nil
+    }, retry.Attempts(3))
+    
+    if err != nil {
+        return nil, err
+    }
+    
+    if r == nil || r.StatusCode() == 304 {
+        return nil, nil
+    }
+
+    rsp := &ServerFetchRsp{}
+    err = json.Unmarshal(r.Body(), rsp)
+    if err != nil {
+        return nil, err
+    }
+    
+    if len(rsp.Data) == 0 {
+        return nil, errors.New("no servers")
+    }
+    
+    return rsp.Data, nil
 }

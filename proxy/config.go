@@ -257,13 +257,16 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 }
             }
 
-            hy2Options := option.Hysteria2OutboundOptions{
-                ServerOptions: option.ServerOptions{
-                    Server: server.Host,
-                },
-                Obfs:     obfs,
-                Password: uuid,
-            }
+            
+    		hy2Options := option.Hysteria2OutboundOptions{
+    		    ServerOptions: option.ServerOptions{
+    		        Server: server.Host,
+    		    },
+    		    Obfs:     obfs,
+    		    Password: uuid,
+    		    UpMbps:     server.UpMbps,
+    		    DownMbps:   server.DownMbps,
+    		}
             
             // TLS 配置
             hy2Options.OutboundTLSOptionsContainer.TLS = &option.OutboundTLSOptions{

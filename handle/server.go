@@ -23,9 +23,12 @@ func GetServers(c *gin.Context) {
 	}
 	r, err := v2b.GetServers()
 	if err != nil {
-		log.Error("get server list error: ", err)
-		c.JSON(400, Rsp{Success: false, Message: err.Error()})
-		return
+		log.WithFields(log.Fields{
+            "error": err,
+            "stack": fmt.Sprintf("%+v", err),
+        }).Error("Failed to get server list")
+        c.JSON(500, Rsp{Success: false, Message: err.Error()}) // 改为500状态码
+        return
 	}
 	updateTime = time.Now().Add(180 * time.Hour)
 
