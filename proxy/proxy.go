@@ -8,8 +8,6 @@ import (
     "github.com/sagernet/sing-box/option"
     slog "github.com/sagernet/sing-box/log"
     E "github.com/sagernet/sing/common/exceptions"
-    "github.com/sagernet/sing/common/logger"
-    N "github.com/sagernet/sing/common/network"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -26,16 +24,13 @@ var (
 
 var client *box.Box
 
-func init() {
-    // 实现一个简单的 V2Ray 服务器
-    experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
-        return &v2rayServer{logger: logger}, nil
-    })
-}
-
 // 实现一个简单的 V2Ray 服务器
 type v2rayServer struct {
     logger slog.Logger
+}
+
+func (s *v2rayServer) Name() string {
+    return "v2ray"
 }
 
 func (s *v2rayServer) Start() error {
@@ -44,6 +39,12 @@ func (s *v2rayServer) Start() error {
 
 func (s *v2rayServer) Close() error {
     return nil
+}
+
+func init() {
+    experimental.RegisterV2RayServerConstructor(func(logger slog.Logger, options option.V2RayAPIOptions) (adapter.V2RayServer, error) {
+        return &v2rayServer{logger: logger}, nil
+    })
 }
 
 func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
@@ -57,9 +58,8 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-    // 创建并配置上下文
-    baseCtx := context.Background()
-    ctx := adapter.WithContext(baseCtx)
+    // 使用基础上下文
+    ctx := context.Background()
     
     // 创建实例
     client, err = box.New(box.Options{
