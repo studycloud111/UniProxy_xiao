@@ -4,9 +4,7 @@ import (
     "context"
 
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing-box/adapter"
-    "github.com/sagernet/sing-box/option"
-    "github.com/sagernet/sing/service"
+    "github.com/sagernet/sing-box/endpoint"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
@@ -20,25 +18,6 @@ var (
     DataPath    string
     ResUrl      string
 )
-
-// 实现必要的 Registry 接口
-type emptyRegistry struct{}
-
-func (r *emptyRegistry) Create(ctx context.Context, router adapter.Router, log service.Logger, tag string, options option.Options) (adapter.Endpoint, error) {
-    return nil, nil
-}
-
-func (r *emptyRegistry) CreateInbound(ctx context.Context, router adapter.Router, log service.Logger, tag string, options option.Options) (adapter.Inbound, error) {
-    return nil, nil
-}
-
-func (r *emptyRegistry) CreateOutbound(ctx context.Context, router adapter.Router, log service.Logger, tag string, options option.Options) (adapter.Outbound, error) {
-    return nil, nil
-}
-
-func (r *emptyRegistry) CreateOptions(name string) (any, bool) {
-    return nil, false
-}
 
 var client *box.Box
 
@@ -55,12 +34,11 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     // 创建基础 context
     ctx := context.Background()
     
-    // 创建空的 registry 实现
-    registry := &emptyRegistry{}
+    // 创建 registry
+    endpointRegistry := endpoint.NewRegistry()
     
     // 设置 registry
-    ctx = service.ContextWithRegistry(ctx, service.NewRegistry())
-    ctx = box.Context(ctx, registry, registry, registry)
+    ctx = box.Context(ctx, endpointRegistry, endpointRegistry, endpointRegistry)
 
     // 创建 box 实例
     client, err = box.New(box.Options{
