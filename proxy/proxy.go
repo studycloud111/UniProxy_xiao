@@ -4,6 +4,7 @@ import (
     "context"
 
     box "github.com/sagernet/sing-box"
+    "github.com/sagernet/sing-box/experimental"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
@@ -32,14 +33,13 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     }
 
     // 创建基础 context
-    ctx, cancel := context.WithCancel(context.Background())
-    defer cancel()
+    ctx := context.Background()
 
     // 创建一个新的 registry
     registry := service.NewRegistry()
 
-    // 将 registry 添加到 context
-    ctx = service.ContextWithRegistry(ctx, registry)
+    // 使用 experimental.WithRegistry
+    ctx = experimental.WithRegistry(ctx, registry)
 
     // 创建 box 实例
     client, err = box.New(box.Options{
