@@ -4,7 +4,7 @@ import (
     "context"
 
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing-box/endpoint"
+    "github.com/sagernet/sing-box/tree/dev-next/adapter/endpoint"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
