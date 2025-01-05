@@ -21,13 +21,6 @@ import (
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
-type DNSQueryType = string
-
-const (
-    DNSQueryTypeA    DNSQueryType = "A"
-    DNSQueryTypeAAAA DNSQueryType = "AAAA"
-)
-
 func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, error) {
     var in option.Inbound
     if TunMode {
@@ -340,14 +333,13 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         DNS: &option.DNSOptions{
             Servers: []option.DNSServerOptions{
                 {
-                    TagTag:     "local",
+                    Tag:     "local",
                     Address: "local",
                 },
                 {
                     Tag:     "remote",
                     Address: "tcp://1.1.1.1",
                     Detour:  "proxy",
-                },
             },
             Rules: []option.DNSRule{
                 {
@@ -358,7 +350,8 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                             Inbound:      badoption.Listable[string]{"mixed"},
                         },
                         DNSRuleAction: option.DNSRuleAction{
-                            Name: "local",
+                            DisableCache: false,
+                            Server:      "local",
                         },
                     },
                 },
@@ -367,16 +360,18 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     DefaultOptions: option.DefaultDNSRule{
                         RawDefaultDNSRule: option.RawDefaultDNSRule{
                             Inbound:   badoption.Listable[string]{"mixed"},
-                            QueryType: badoption.Listable[DNSQueryType]{DNSQueryTypeA, DNSQueryTypeAAAA},
                         },
                         DNSRuleAction: option.DNSRuleAction{
-                            Name: "remote",
+                            DisableCache: false,
+                            Server:      "remote",
                         },
                     },
                 },
             },
             Final: "remote",
-            Strategy: option.DomainStrategy("prefer_ipv4"),
+            DisableCache:     false,
+            DisableExpire:    false,
+            IndependentCache: true,
         },
         Inbounds: []option.Inbound{
             in,
