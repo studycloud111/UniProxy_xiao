@@ -244,7 +244,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             trojanOptions.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
                 ServerName: server.ServerName,
-                Insecure:   server.Allow_Insecure == 1,
+                Insecure:   server.AllowInsecure == 1,
             }
         }
 
@@ -330,22 +330,54 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         Log: &option.LogOptions{
             Level: "debug",
         },
+        DNS: &option.DNSOptions{
+            Servers: []option.DNSServerOptions{
+                {
+                    Tag:     "local",
+                    Address: "local",
+                },
+                {
+                    Tag:     "remote",
+                    Address: "tcp://1.1.1.1",
+                    Detour:  "proxy",
+                },
+            },
+            Rules: []option.DNSRule{
+                {
+                    Type:    "logical",
+                    Mode:    "and",
+                    Inbound: []string{"mixed"},
+                    GeoSite: []string{"cn"},
+                    Server:  "local",
+                },
+                {
+                    Type:    "logical",
+                    Mode:    "and",
+                    Inbound: []string{"mixed"},
+                    Query_type: []string{"A", "AAAA"},
+                    Server:  "remote",
+                },
+            },
+            Final: "local",
+        },
         Inbounds: []option.Inbound{
             in,
         },
         Outbounds: []option.Outbound{
             out,
             {
-                Tag:  "direct",
-                Type: "direct",
+                Tag:     "direct",
+                Type:    "direct",
             },
         },
-        Route: r,
+        Route:   r,
         Experimental: &option.ExperimentalOptions{
             V2RayAPI: &option.V2RayAPIOptions{
-                Listen: "127.0.0.1:0",  // 使用随机端口
+                Listen: "127.0.0.1:0",
                 Stats: &option.V2RayStatsServiceOptions{
-                    Enabled: true,
+                    Enabled:   true,
+                    Inbounds:  []string{"mixed"},
+                    Outbounds: []string{"proxy", "direct"},
                 },
             },
         },
@@ -366,12 +398,10 @@ func getRules(global bool) (*option.RouteOptions, error) {
 
     return &option.RouteOptions{
         GeoIP: &option.GeoIPOptions{
-            DownloadURL: ResUrl + "/geoip.db",
-            Path:        path.Join(DataPath, "geoip.dat"),
+            Path: path.Join(DataPath, "geoip.dat"),
         },
         Geosite: &option.GeositeOptions{
-            DownloadURL: ResUrl + "/geosite.db",
-            Path:        path.Join(DataPath, "geosite.dat"),
+            Path: path.Join(DataPath, "geosite.dat"),
         },
         Rules: []option.Rule{
             {
@@ -381,12 +411,27 @@ func getRules(global bool) (*option.RouteOptions, error) {
                         GeoIP:   badoption.Listable[string]{"cn", "private"},
                         Geosite: badoption.Listable[string]{"cn"},
                     },
-                    RuleAction: option.RuleAction{
+                    RuleAction: option.RuleAction: option.RuleAction{
                         Action: "direct",
                     },
                 },
             },
+            {
+                Type: C.RuleTypeDefault,
+                DefaultOptions: option.DefaultRule{
+                    RawDefaultRule: option.RawDefaultRule{
+                        Inbound: badoption.Listable[string]{"mixed"},
+                    },
+                    RuleAction: option.RuleAction{
+                        Action: "proxy",
+                    },
+                },
+            },
         },
+        AutoDetectInterface: true,
+        DefaultInterface:    "en0",
+        DefaultMark:        2323,
+        FindProcess:        true,
     }, nil
 }
 
