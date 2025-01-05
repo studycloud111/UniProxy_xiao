@@ -307,7 +307,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 
             hy1Options.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
-                Insecure:   server.AllowInsecure ==Insecure:   server.AllowInsecure == 1,
+                Insecure:   server.AllowInsecure == 1,
                 ServerName: server.ServerName,
             }
 
