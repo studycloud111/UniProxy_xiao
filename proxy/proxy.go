@@ -40,9 +40,9 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     ctx := context.Background()
     
     // 创建必要的注册器
-    endpointRegistry := experimental.NewEndpointRegistry()
-    inboundRegistry := experimental.NewInboundRegistry()
-    outboundRegistry := experimental.NewOutboundRegistry()
+    endpointRegistry := new(experimental.EndpointRegistry)
+    inboundRegistry := new(experimental.InboundRegistry)
+    outboundRegistry := new(experimental.OutboundRegistry)
     
     // 注册到 context
     ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)

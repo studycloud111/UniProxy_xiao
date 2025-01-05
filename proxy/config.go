@@ -344,18 +344,26 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             },
             Rules: []option.DNSRule{
                 {
-                    Type:    "logical",
-                    Mode:    "and",
-                    Inbound: []string{"mixed"},
-                    GeoSite: []string{"cn"},
-                    Server:  "local",
+                    Type: "logical",
+                    LogicalOptions: option.LogicalDNSRule{
+                        Mode:    "and",
+                        Inbound: []string{"mixed"},
+                        GeoSite: []string{"cn"},
+                    },
+                    DefaultOptions: option.DefaultDNSRule{
+                        Server: "local",
+                    },
                 },
                 {
-                    Type:    "logical",
-                    Mode:    "and",
-                    Inbound: []string{"mixed"},
-                    QueryType: []string{"A", "AAAA"},
-                    Server:  "remote",
+                    Type: "logical",
+                    LogicalOptions: option.LogicalDNSRule{
+                        Mode:      "and",
+                        Inbound:   []string{"mixed"},
+                        QueryType: []string{"A", "AAAA"},
+                    },
+                    DefaultOptions: option.DefaultDNSRule{
+                        Server: "remote",
+                    },
                 },
             },
             Final: "local",
