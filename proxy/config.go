@@ -351,8 +351,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                             Inbound:      badoption.Listable[string]{"mixed"},
                         },
                         DNSRuleAction: option.DNSRuleAction{
-                            DisableCache: false,
-                            Server:      "local",
+                            Tag: "local",
                         },
                     },
                 },
@@ -363,18 +362,16 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                             Inbound:   badoption.Listable[string]{"mixed"},
                         },
                         DNSRuleAction: option.DNSRuleAction{
-                            DisableCache: false,
-                            Server:      "remote",
+                            Tag: "remote",
                         },
                     },
                 },
             },
-            Final:           "remote",
-            DisableCache:    false,
-            DisableExpire:   false,
-            IndependentCache: true,
+            Final: "remote",
         },
-        Inbounds: []option.Inbound{in},
+        Inbounds: []option.Inbound{
+            in,
+        },
         Outbounds: []option.Outbound{
             out,
             {
@@ -417,7 +414,6 @@ func getRules(global bool) (*option.RouteOptions, error) {
         },
         Geosite: &option.GeositeOptions{
             Path: path.Join(DataPath, "geosite.dat"),
-        },
         Rules: []option.Rule{
             {
                 Type: C.RuleTypeDefault,
