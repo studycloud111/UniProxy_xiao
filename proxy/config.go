@@ -414,6 +414,7 @@ func getRules(global bool) (*option.RouteOptions, error) {
         },
         Geosite: &option.GeositeOptions{
             Path: path.Join(DataPath, "geosite.dat"),
+        },  // 添加逗号
         Rules: []option.Rule{
             {
                 Type: C.RuleTypeDefault,
