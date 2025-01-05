@@ -36,19 +36,15 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return err
     }
     
-
     // 创建基础 context
-    ctx := context.Background()
-    ctx = service.ContextWithDefaultRegistry(ctx)
+    ctx := service.ContextWithDefaultRegistry(context.Background())
     
-    // 用 box.Context 直接创建所需的注册
-    inboundRegistry := adapter.NewInboundRegistry()
-    outboundRegistry := adapter.NewOutboundRegistry()
-    endpointRegistry := adapter.NewEndpointRegistry()
+    // 创建默认注册器
+    inboundReg := new(experimental.InboundRegistry)
+    outboundReg := new(experimental.OutboundRegistry)
+    endpointReg := new(experimental.EndpointRegistry)
     
-    ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
-    ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
-    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
+    ctx = box.Context(ctx, inboundReg, outboundReg, endpointReg)
     
     // 创建 box 实例
     instance, err := box.New(box.Options{
@@ -59,7 +55,6 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return E.Cause(err, "create client")
     }
     
-    // 启动服务
     err = instance.Start()
     if err != nil {
         instance.Close()
