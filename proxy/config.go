@@ -326,6 +326,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         return option.Options{}, fmt.Errorf("get rules error: %s", err)
     }
 
+// 修复 DNS 配置部分
     return option.Options{
         Log: &option.LogOptions{
             Level: "debug",
@@ -344,26 +345,18 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             },
             Rules: []option.DNSRule{
                 {
-                    Type: "logical",
-                    LogicalOptions: option.LogicalDNSRule{
-                        Mode:    "and",
-                        Inbound: []string{"mixed"},
-                        GeoSite: []string{"cn"},
-                    },
-                    DefaultOptions: option.DefaultDNSRule{
-                        Server: "local",
-                    },
+                    Type:      "logical",
+                    Mode:      "and",
+                    Inbound:   []string{"mixed"},
+                    GeoSite:   []string{"cn"},
+                    Server:    "local",
                 },
                 {
-                    Type: "logical",
-                    LogicalOptions: option.LogicalDNSRule{
-                        Mode:      "and",
-                        Inbound:   []string{"mixed"},
-                        QueryType: []string{"A", "AAAA"},
-                    },
-                    DefaultOptions: option.DefaultDNSRule{
-                        Server: "remote",
-                    },
+                    Type:      "logical",
+                    Mode:      "and",
+                    Inbound:   []string{"mixed"},
+                    QueryType: []string{"A", "AAAA"},
+                    Server:    "remote",
                 },
             },
             Final: "local",
