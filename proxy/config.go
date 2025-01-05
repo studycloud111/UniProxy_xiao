@@ -75,6 +75,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         serverPort = uint16(port)
     }
 
+    // 设置出站连接配置
     var out option.Outbound
     out.Tag = "proxy"
     so := option.ServerOptions{
@@ -326,14 +327,12 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         return option.Options{}, fmt.Errorf("get rules error: %s", err)
     }
 
-// 修复 DNS 配置部分
     return option.Options{
         Log: &option.LogOptions{
             Level: "debug",
         },
         DNS: &option.DNSOptions{
-            Servers: []option.DNSServerOptions{
-                {
+            Servers: []option.DNSServerOptions{{
                     Tag:     "local",
                     Address: "local",
                 },
@@ -345,21 +344,31 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             },
             Rules: []option.DNSRule{
                 {
-                    Type:      "logical",
-                    Mode:      "and",
-                    Inbound:   []string{"mixed"},
-                    GeoSite:   []string{"cn"},
-                    Server:    "local",
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            DomainSuffix: badoption.Listable[string]{".cn"},
+                            Inbound:      badoption.Listable[string]{"mixed"},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Server: "local",
+                        },
+                    },
                 },
                 {
-                    Type:      "logical",
-                    Mode:      "and",
-                    Inbound:   []string{"mixed"},
-                    QueryType: []string{"A", "AAAA"},
-                    Server:    "remote",
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            Inbound:   badoption.Listable[string]{"mixed"},
+                            QueryType: badoption.Listable[option.DNSQueryType]{"A", "AAAA"},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Server: "remote",
+                        },
+                    },
                 },
             },
-            Final: "local",
+            Final: "remote",
         },
         Inbounds: []option.Inbound{
             in,
@@ -379,8 +388,6 @@ func getRules(global bool) (*option.RouteOptions, error) {
     if global {
         return &option.RouteOptions{
             AutoDetectInterface: true,
-            DefaultInterface:    "en0",
-            DefaultMark:        2323,
             Rules: []option.Rule{
                 {
                     Type: C.RuleTypeDefault,

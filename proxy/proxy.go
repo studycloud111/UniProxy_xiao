@@ -4,7 +4,6 @@ import (
     "context"
     box "github.com/sagernet/sing-box"
     "github.com/sagernet/sing-box/adapter"
-    "github.com/sagernet/sing-box/experimental"
     "github.com/sagernet/sing-box/option"
     slog "github.com/sagernet/sing-box/log"
     E "github.com/sagernet/sing/common/exceptions"
@@ -37,14 +36,8 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     }
     
     // 创建基础 context
-    ctx := service.ContextWithDefaultRegistry(context.Background())
-    
-    // 创建默认注册器
-    inboundReg := new(experimental.InboundRegistry)
-    outboundReg := new(experimental.OutboundRegistry)
-    endpointReg := new(experimental.EndpointRegistry)
-    
-    ctx = box.Context(ctx, inboundReg, outboundReg, endpointReg)
+    ctx := context.Background()
+    ctx = service.ContextWithDefaultRegistry(ctx)
     
     // 创建 box 实例
     instance, err := box.New(box.Options{
