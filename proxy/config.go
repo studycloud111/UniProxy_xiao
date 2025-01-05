@@ -21,11 +21,11 @@ import (
     "github.com/studycloud111/UniProxy_xiao/v2b"
 )
 
-type DNSQueryType int
+type DNSQueryType = string
 
 const (
-    DNSQueryTypeA DNSQueryType = iota + 1
-    DNSQueryTypeAAAA
+    DNSQueryTypeA    DNSQueryType = "A"
+    DNSQueryTypeAAAA DNSQueryType = "AAAA"
 )
 
 func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, error) {
@@ -82,7 +82,6 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         serverPort = uint16(port)
     }
 
-    // 设置出站连接配置
     var out option.Outbound
     out.Tag = "proxy"
     so := option.ServerOptions{
@@ -339,8 +338,9 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Level: "debug",
         },
         DNS: &option.DNSOptions{
-            Servers: []option.DNSServerOptions{{
-                    Tag:     "local",
+            Servers: []option.DNSServerOptions{
+                {
+                    TagTag:     "local",
                     Address: "local",
                 },
                 {
@@ -350,32 +350,33 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                 },
             },
             Rules: []option.DNSRule{
-			    {
-			        Type: C.RuleTypeDefault,
-			        DefaultOptions: option.DefaultDNSRule{
-			            RawDefaultDNSRule: option.RawDefaultDNSRule{
-			                DomainSuffix: badoption.Listable[string]{".cn"},
-			                Inbound:      badoption.Listable[string]{"mixed"},
-			            },
-			            DNSRuleAction: option.DNSRuleAction{
-			                ServerTag: "local",  // 使用 ServerTag 而不是 Server
-			            },
-			        },
-			    },
-			    {
-			        Type: C.RuleTypeDefault,
-			        DefaultOptions: option.DefaultDNSRule{
-			            RawDefaultDNSRule: option.RawDefaultDNSRule{
-			                Inbound:   badoption.Listable[string]{"mixed"},
-			                QueryType: badoption.Listable[option.DNSQueryType]{option.DNSQueryTypeA, option.DNSQueryTypeAAAA},
-			            },
-			            DNSRuleAction: option.DNSRuleAction{
-			                ServerTag: "remote",  // 使用 ServerTag 而不是 Server
-			            },
-			        },
-			    },
-			},
+                {
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            DomainSuffix: badoption.Listable[string]{".cn"},
+                            Inbound:      badoption.Listable[string]{"mixed"},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Name: "local",
+                        },
+                    },
+                },
+                {
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            Inbound:   badoption.Listable[string]{"mixed"},
+                            QueryType: badoption.Listable[DNSQueryType]{DNSQueryTypeA, DNSQueryTypeAAAA},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Name: "remote",
+                        },
+                    },
+                },
+            },
             Final: "remote",
+            Strategy: option.DomainStrategy("prefer_ipv4"),
         },
         Inbounds: []option.Inbound{
             in,
