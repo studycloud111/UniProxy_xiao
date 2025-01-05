@@ -3,9 +3,6 @@ package proxy
 import (
     "context"
     box "github.com/sagernet/sing-box"
-    "github.com/sagernet/sing-box/adapter"
-    "github.com/sagernet/sing-box/option"
-    slog "github.com/sagernet/sing-box/log"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
