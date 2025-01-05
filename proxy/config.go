@@ -340,6 +340,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     Tag:     "remote",
                     Address: "tcp://1.1.1.1",
                     Detour:  "proxy",
+                },
             },
             Rules: []option.DNSRule{
                 {
@@ -368,14 +369,12 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     },
                 },
             },
-            Final: "remote",
-            DisableCache:     false,
-            DisableExpire:    false,
+            Final:           "remote",
+            DisableCache:    false,
+            DisableExpire:   false,
             IndependentCache: true,
         },
-        Inbounds: []option.Inbound{
-            in,
-        },
+        Inbounds: []option.Inbound{in},
         Outbounds: []option.Outbound{
             out,
             {
