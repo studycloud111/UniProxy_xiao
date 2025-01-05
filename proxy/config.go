@@ -331,44 +331,50 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Level: "debug",
         },
         DNS: &option.DNSOptions{
-            Servers: []option.DNSServerOptions{
-                {
-                    Tag:     "local",
-                    Address: "local",
-                },
-                {
-                    Tag:     "remote",
-                    Address: "tcp://1.1.1.1",
-                    Detour:  "proxy",
-                },
+        Servers: []option.DNSServerOptions{
+            {
+                Tag:     "local",
+                Address: "local",
             },
-            Rules: []option.DNSRule{
-                {
-                    Type: C.RuleTypeDefault,
-                    DefaultOptions: option.DefaultDNSRule{
-                        RawDefaultDNSRule: option.RawDefaultDNSRule{
-                            DomainSuffix: badoption.Listable[string]{".cn"},
-                            Inbound:      badoption.Listable[string]{"mixed"},
-                        },
-                        DNSRuleAction: option.DNSRuleAction{
-                            Tag: "local",
-                        },
-                    },
-                },
-                {
-                    Type: C.RuleTypeDefault,
-                    DefaultOptions: option.DefaultDNSRule{
-                        RawDefaultDNSRule: option.RawDefaultDNSRule{
-                            Inbound:   badoption.Listable[string]{"mixed"},
-                        },
-                        DNSRuleAction: option.DNSRuleAction{
-                            Tag: "remote",
-                        },
-                    },
-                },
+            {
+                Tag:     "remote",
+                Address: "tcp://1.1.1.1",
+                Detour:  "proxy",
             },
-            Final: "remote",
         },
+        Rules: []option.DNSRule{
+            {
+                Type: C.RuleTypeDefault,
+                DefaultOptions: option.DefaultDNSRule{
+                    RawDefaultDNSRule: option.RawDefaultDNSRule{
+                        DomainSuffix: badoption.Listable[string]{".cn"},
+                        Inbound:      badoption.Listable[string]{"mixed"},
+                    },
+                    DNSRuleAction: option.DNSRuleAction{
+                        Action: C.RuleActionTypeRoute,
+                        RouteOptions: option.DNSRouteActionOptions{
+                            Server: "local",
+                        },
+                    },
+                },
+            },
+            {
+                Type: C.RuleTypeDefault,
+                DefaultOptions: option.DefaultDNSRule{
+                    RawDefaultDNSRule: option.RawDefaultDNSRule{
+                        Inbound:   badoption.Listable[string]{"mixed"},
+                    },
+                    DNSRuleAction: option.DNSRuleAction{
+                        Action: C.RuleActionTypeRoute,
+                        RouteOptions: option.DNSRouteActionOptions{
+                            Server: "remote",
+                        },
+                    },
+                },
+            },
+        },
+        Final: "remote",
+    	},
         Inbounds: []option.Inbound{
             in,
         },
