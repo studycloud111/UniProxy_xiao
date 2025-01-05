@@ -307,7 +307,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
 
             hy1Options.TLS = &option.OutboundTLSOptions{
                 Enabled:    true,
-                Insecure:   server.AllowInsecure == 1,
+                Insecure:   server.AllowInsecure ==Insecure:   server.AllowInsecure == 1,
                 ServerName: server.ServerName,
             }
 
@@ -354,7 +354,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
                     Type:    "logical",
                     Mode:    "and",
                     Inbound: []string{"mixed"},
-                    Query_type: []string{"A", "AAAA"},
+                    QueryType: []string{"A", "AAAA"},
                     Server:  "remote",
                 },
             },
@@ -366,21 +366,11 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
         Outbounds: []option.Outbound{
             out,
             {
-                Tag:     "direct",
-                Type:    "direct",
+                Tag:  "direct",
+                Type: "direct",
             },
         },
-        Route:   r,
-        Experimental: &option.ExperimentalOptions{
-            V2RayAPI: &option.V2RayAPIOptions{
-                Listen: "127.0.0.1:0",
-                Stats: &option.V2RayStatsServiceOptions{
-                    Enabled:   true,
-                    Inbounds:  []string{"mixed"},
-                    Outbounds: []string{"proxy", "direct"},
-                },
-            },
-        },
+        Route: r,
     }, nil
 }
 
@@ -388,6 +378,21 @@ func getRules(global bool) (*option.RouteOptions, error) {
     if global {
         return &option.RouteOptions{
             AutoDetectInterface: true,
+            DefaultInterface:    "en0",
+            DefaultMark:        2323,
+            Rules: []option.Rule{
+                {
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultRule{
+                        RawDefaultRule: option.RawDefaultRule{
+                            Inbound: badoption.Listable[string]{"mixed"},
+                        },
+                        RuleAction: option.RuleAction{
+                            Action: "proxy",
+                        },
+                    },
+                },
+            },
         }, nil
     }
 
@@ -411,7 +416,7 @@ func getRules(global bool) (*option.RouteOptions, error) {
                         GeoIP:   badoption.Listable[string]{"cn", "private"},
                         Geosite: badoption.Listable[string]{"cn"},
                     },
-                    RuleAction: option.RuleAction: option.RuleAction{
+                    RuleAction: option.RuleAction{
                         Action: "direct",
                     },
                 },
