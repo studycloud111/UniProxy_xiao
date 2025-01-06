@@ -1,76 +1,95 @@
 package handle
 
 import (
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
-	"github.com/studycloud111/UniProxy_xiao/proxy"
+    "github.com/gin-gonic/gin"
+    log "github.com/sirupsen/logrus"
+    "github.com/studycloud111/UniProxy_xiao/proxy"
 )
 
 type StartUniProxyRequest struct {
-	Tag        string `json:"tag"`
-	Uuid       string `json:"uuid"`
-	GlobalMode bool   `json:"global_mode"`
+    Tag        string `json:"tag"`
+    Uuid       string `json:"uuid"`
+    GlobalMode bool   `json:"global_mode"`
 }
 
 func StartUniProxy(c *gin.Context) {
-	p := StartUniProxyRequest{}
-	err := c.ShouldBindJSON(&p)
-	if err != nil {
-		c.JSON(400, Rsp{
-			Success: false,
-		})
-		return
-	}
-	proxy.GlobalMode = p.GlobalMode
-	err = proxy.StartProxy(p.Tag, p.Uuid, servers[p.Tag])
-	if err != nil {
-		log.WithField("err", err).Error("start proxy failed")
-		c.JSON(400, Rsp{
-			Success: false,
-			Message: err.Error(),
-		})
-		return
-	}
-	c.JSON(200, Rsp{
-		Success: true,
-		Message: "ok",
-		Data: StatusData{
-			Inited:      inited,
-			Running:     proxy.Running,
-			GlobalMode:  proxy.GlobalMode,
-			SystemProxy: proxy.SystemProxy,
-		},
-	})
-	return
+    p := StartUniProxyRequest{}
+    err := c.ShouldBindJSON(&p)
+    if err != nil {
+        log.WithError(err).Error("Failed to bind request")
+        c.JSON(400, Rsp{
+            Success: false,
+            Message: err.Error(),
+        })
+        return
+    }
+    
+    if server, ok := servers[p.Tag]; !ok {
+        log.WithField("tag", p.Tag).Error("Server not found")
+        c.JSON(400, Rsp{
+            Success: false,
+            Message: "server not found",
+        })
+        return
+    }
+
+    proxy.GlobalMode = p.GlobalMode
+    err = proxy.StartProxy(p.Tag, p.Uuid, servers[p.Tag])
+    if err != nil {
+        log.WithFields(log.Fields{
+            "error": err,
+            "tag": p.Tag,
+            "global_mode": p.GlobalMode,
+            "server": servers[p.Tag],
+        }).Error("Failed to start proxy")
+        
+        c.JSON(500, Rsp{
+            Success: false,
+            Message: err.Error(),
+        })
+        return
+    }
+    
+    c.JSON(200, Rsp{
+        Success: true,
+        Message: "ok",
+        Data: StatusData{
+            Inited:      inited,
+            Running:     proxy.Running,
+            GlobalMode:  proxy.GlobalMode,
+            SystemProxy: proxy.SystemProxy,
+        },
+    })
 }
 
 func StopUniProxy(c *gin.Context) {
-	if proxy.Running {
-		proxy.StopProxy()
-	}
-	c.JSON(200, Rsp{
-		Success: true,
-		Message: "ok",
-	})
+    if proxy.Running {
+        proxy.StopProxy()
+    }
+    c.JSON(200, Rsp{
+        Success: true,
+        Message: "ok",
+    })
 }
 
 func SetSystemProxy(c *gin.Context) {
-	c.JSON(200, Rsp{
-		Success: true,
-		Message: "ok",
-	})
+    c.JSON(200, Rsp{
+        Success: true,
+        Message: "ok",
+    })
 }
 
 func ClearSystemProxy(c *gin.Context) {
-	err := proxy.ClearSystemProxy()
-	if err != nil {
-		c.JSON(200, Rsp{
-			Success: false,
-			Message: err.Error(),
-		})
-	}
-	c.JSON(200, Rsp{
-		Success: true,
-		Message: "ok",
-	})
+    err := proxy.ClearSystemProxy()
+    if err != nil {
+        c.JSON(500, Rsp{
+            Success: false,
+            Message: err.Error(),
+        })
+        return
+    }
+    c.JSON(200, Rsp{
+        Success: true,
+        Message: "ok",
+    })
 }
