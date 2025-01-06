@@ -4,10 +4,13 @@ import (
     "context"
     box "github.com/sagernet/sing-box"
     "github.com/sagernet/sing-box/adapter"
+    "github.com/sagernet/sing-box/adapter/endpoint"
+    "github.com/sagernet/sing-box/adapter/inbound"
+    "github.com/sagernet/sing-box/adapter/outbound"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
-    "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
     "github.com/studycloud111/UniProxy_xiao/v2b"
+    "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
 )
 
 var (
@@ -37,16 +40,14 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     ctx := context.Background()
     
     // 创建所有必要的注册器
-    endpointRegistry := adapter.NewRegistry[adapter.Endpoint]()
-    inboundRegistry := adapter.NewRegistry[adapter.Inbound]()
-    outboundRegistry := adapter.NewRegistry[adapter.Outbound]()
-    serviceRegistry := service.NewRegistry() 
-
-    // 使用 sing-box 的 Context 函数进行正确的注册
-    ctx = box.Context(ctx, inboundRegistry, outboundRegistry, endpointRegistry)
+    endpointRegistry := endpoint.NewRegistry()
+    inboundRegistry := inbound.NewRegistry()
+    outboundRegistry := outbound.NewRegistry()
     
-    // 注册 service registry
-    ctx = service.ContextWith[service.Registry](ctx, serviceRegistry)
+    // 注册到 context 
+    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
+    ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
+    ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
     
     // 添加默认服务注册
     ctx = service.ContextWithDefaultRegistry(ctx)
@@ -60,7 +61,6 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return E.Cause(err, "create client")
     }
     
-    // Start 实例
     err = instance.Start()
     if err != nil {
         instance.Close()
