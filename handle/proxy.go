@@ -24,7 +24,9 @@ func StartUniProxy(c *gin.Context) {
         return
     }
     
-    if server, ok := servers[p.Tag]; !ok {
+    // 检查 server 是否存在
+    server, exists := servers[p.Tag]
+    if !exists {
         log.WithField("tag", p.Tag).Error("Server not found")
         c.JSON(400, Rsp{
             Success: false,
@@ -34,13 +36,12 @@ func StartUniProxy(c *gin.Context) {
     }
 
     proxy.GlobalMode = p.GlobalMode
-    err = proxy.StartProxy(p.Tag, p.Uuid, servers[p.Tag])
+    err = proxy.StartProxy(p.Tag, p.Uuid, server)  // 使用找到的 server
     if err != nil {
         log.WithFields(log.Fields{
             "error": err,
             "tag": p.Tag,
             "global_mode": p.GlobalMode,
-            "server": servers[p.Tag],
         }).Error("Failed to start proxy")
         
         c.JSON(500, Rsp{
