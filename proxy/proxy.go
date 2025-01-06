@@ -36,16 +36,18 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     // 创建基础 context
     ctx := context.Background()
     
-    // 创建注册器
+    // 创建所有必要的注册器
     endpointRegistry := adapter.NewRegistry[adapter.Endpoint]()
     inboundRegistry := adapter.NewRegistry[adapter.Inbound]()
     outboundRegistry := adapter.NewRegistry[adapter.Outbound]()
+    serviceRegistry := service.NewRegistry() 
 
-    // 注册到 context
-    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
-    ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
-    ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
-
+    // 使用 sing-box 的 Context 函数进行正确的注册
+    ctx = box.Context(ctx, inboundRegistry, outboundRegistry, endpointRegistry)
+    
+    // 注册 service registry
+    ctx = service.ContextWith[service.Registry](ctx, serviceRegistry)
+    
     // 添加默认服务注册
     ctx = service.ContextWithDefaultRegistry(ctx)
     
@@ -58,6 +60,7 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         return E.Cause(err, "create client")
     }
     
+    // Start 实例
     err = instance.Start()
     if err != nil {
         instance.Close()
