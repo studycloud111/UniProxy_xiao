@@ -6,7 +6,6 @@ import (
     "github.com/sagernet/sing-box/adapter"
     "github.com/sagernet/sing-box/adapter/outbound"
     "github.com/sagernet/sing-box/adapter/inbound"
-    "github.com/sagernet/sing-box/experimental/libbox/platform"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/v2b"
@@ -48,13 +47,15 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     // 创建基础 context
     ctx := context.Background()
     
+    // 创建所有必要的注册器
+    serviceRegistry := service.NewRegistry()
+    ctx = service.ContextWith[service.Registry](ctx, serviceRegistry)
+    
     // 创建注册器
-    endpointRegistry := platform.NewRegistry()
     inboundRegistry := inbound.NewRegistry()
     outboundRegistry := outbound.NewRegistry()
     
     // 注册到 context
-    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
     ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
     ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
     
