@@ -7,7 +7,6 @@ import (
     "github.com/sagernet/sing-box/adapter/outbound" 
     "github.com/sagernet/sing-box/adapter/inbound"
     "github.com/sagernet/sing-box/adapter/endpoint"
-    "github.com/sagernet/sing-box/option"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/v2b"
