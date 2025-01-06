@@ -315,7 +315,8 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             hy1Options.ServerOptions.ServerPort = uint16(port)
 
             out.Options = hy1Options
-        }default:
+        }
+    default:
         return option.Options{}, errors.New("server type is unknown")
     }
 
