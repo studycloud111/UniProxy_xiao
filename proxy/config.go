@@ -315,9 +315,7 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             hy1Options.ServerOptions.ServerPort = uint16(port)
 
             out.Options = hy1Options
-        }
-
-    default:
+        }default:
         return option.Options{}, errors.New("server type is unknown")
     }
 
@@ -331,50 +329,50 @@ func GetSingBoxConfig(uuid string, server *v2b.ServerInfo) (option.Options, erro
             Level: "debug",
         },
         DNS: &option.DNSOptions{
-        Servers: []option.DNSServerOptions{
-            {
-                Tag:     "local",
-                Address: "local",
+            Servers: []option.DNSServerOptions{
+                {
+                    Tag:     "local",
+                    Address: "local",
+                },
+                {
+                    Tag:     "remote",
+                    Address: "tcp://1.1.1.1",
+                    Detour:  "proxy",
+                },
             },
-            {
-                Tag:     "remote",
-                Address: "tcp://1.1.1.1",
-                Detour:  "proxy",
-            },
-        },
-        Rules: []option.DNSRule{
-            {
-                Type: C.RuleTypeDefault,
-                DefaultOptions: option.DefaultDNSRule{
-                    RawDefaultDNSRule: option.RawDefaultDNSRule{
-                        DomainSuffix: badoption.Listable[string]{".cn"},
-                        Inbound:      badoption.Listable[string]{"mixed"},
+            Rules: []option.DNSRule{
+                {
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            DomainSuffix: badoption.Listable[string]{".cn"},
+                            Inbound:      badoption.Listable[string]{"mixed"},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Action: C.RuleActionTypeRoute,
+                            RouteOptions: option.DNSRouteActionOptions{
+                                Server: "local",
+                            },
+                        },
                     },
-                    DNSRuleAction: option.DNSRuleAction{
-                        Action: C.RuleActionTypeRoute,
-                        RouteOptions: option.DNSRouteActionOptions{
-                            Server: "local",
+                },
+                {
+                    Type: C.RuleTypeDefault,
+                    DefaultOptions: option.DefaultDNSRule{
+                        RawDefaultDNSRule: option.RawDefaultDNSRule{
+                            Inbound:   badoption.Listable[string]{"mixed"},
+                        },
+                        DNSRuleAction: option.DNSRuleAction{
+                            Action: C.RuleActionTypeRoute,
+                            RouteOptions: option.DNSRouteActionOptions{
+                                Server: "remote",
+                            },
                         },
                     },
                 },
             },
-            {
-                Type: C.RuleTypeDefault,
-                DefaultOptions: option.DefaultDNSRule{
-                    RawDefaultDNSRule: option.RawDefaultDNSRule{
-                        Inbound:   badoption.Listable[string]{"mixed"},
-                    },
-                    DNSRuleAction: option.DNSRuleAction{
-                        Action: C.RuleActionTypeRoute,
-                        RouteOptions: option.DNSRouteActionOptions{
-                            Server: "remote",
-                        },
-                    },
-                },
-            },
+            Final: "remote",
         },
-        Final: "remote",
-    	},
         Inbounds: []option.Inbound{
             in,
         },
@@ -420,7 +418,7 @@ func getRules(global bool) (*option.RouteOptions, error) {
         },
         Geosite: &option.GeositeOptions{
             Path: path.Join(DataPath, "geosite.dat"),
-        },  // 添加逗号
+        },
         Rules: []option.Rule{
             {
                 Type: C.RuleTypeDefault,

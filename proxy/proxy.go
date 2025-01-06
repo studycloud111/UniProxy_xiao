@@ -3,6 +3,7 @@ package proxy
 import (
     "context"
     box "github.com/sagernet/sing-box"
+    "github.com/sagernet/sing-box/adapter"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
@@ -34,6 +35,18 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     
     // 创建基础 context
     ctx := context.Background()
+    
+    // 创建注册器
+    endpointRegistry := adapter.NewRegistry[adapter.Endpoint]()
+    inboundRegistry := adapter.NewRegistry[adapter.Inbound]()
+    outboundRegistry := adapter.NewRegistry[adapter.Outbound]()
+
+    // 注册到 context
+    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
+    ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
+    ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
+
+    // 添加默认服务注册
     ctx = service.ContextWithDefaultRegistry(ctx)
     
     // 创建 box 实例
