@@ -2,10 +2,12 @@ package proxy
 
 import (
     "context"
-    "github.com/sagernet/sing-box"
+    box "github.com/sagernet/sing-box"
     "github.com/sagernet/sing-box/adapter"
-    "github.com/sagernet/sing-box/adapter/outbound"
+    "github.com/sagernet/sing-box/adapter/outbound" 
     "github.com/sagernet/sing-box/adapter/inbound"
+    "github.com/sagernet/sing-box/adapter/endpoint"
+    "github.com/sagernet/sing-box/option"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/v2b"
@@ -46,22 +48,20 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     
     // 创建基础 context
     ctx := context.Background()
-    
-    // 创建所有必要的注册器
-    serviceRegistry := service.NewRegistry()
-    ctx = service.ContextWith[service.Registry](ctx, serviceRegistry)
-    
+
     // 创建注册器
+    endpointRegistry := endpoint.NewRegistry()
     inboundRegistry := inbound.NewRegistry()
     outboundRegistry := outbound.NewRegistry()
     
     // 注册到 context
+    ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
     ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
     ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
-    
+
     // 添加默认服务注册
     ctx = service.ContextWithDefaultRegistry(ctx)
-    
+
     // 创建 box 实例
     instance, err := box.New(box.Options{
         Context: ctx,
@@ -70,6 +70,14 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     if err != nil {
         log.WithError(err).Error("Failed to create sing-box instance")
         return E.Cause(err, "create client")
+    }
+
+    // 先执行 PreStart
+    err = instance.PreStart()
+    if err != nil {
+        instance.Close()
+        log.WithError(err).Error("Failed to pre-start sing-box instance")
+        return E.Cause(err, "pre-start client")
     }
     
     err = instance.Start()
