@@ -6,13 +6,12 @@ import (
     "github.com/sagernet/sing-box/adapter"
     "github.com/sagernet/sing-box/adapter/outbound"
     "github.com/sagernet/sing-box/adapter/inbound"
-    "github.com/sagernet/sing-box/adapter/endpoint"
-    "github.com/sagernet/sing-box/log"
+    "github.com/sagernet/sing-box/experimental/libbox/platform"
     E "github.com/sagernet/sing/common/exceptions"
     "github.com/sagernet/sing/service"
     "github.com/studycloud111/UniProxy_xiao/v2b"
     "github.com/studycloud111/UniProxy_xiao/common/sysproxy"
-    log_service "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,7 +31,7 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
         StopProxy()
     }
 
-    log_service.WithFields(log_service.Fields{
+    log.WithFields(log.Fields{
         "tag": tag,
         "server_type": server.Type,
         "server_host": server.Host,
@@ -42,7 +41,7 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     
     c, err := GetSingBoxConfig(uuid, server)
     if err != nil {
-        log_service.WithError(err).Error("Failed to get sing-box config")
+        log.WithError(err).Error("Failed to get sing-box config")
         return err
     }
     
@@ -50,7 +49,7 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     ctx := context.Background()
     
     // 创建注册器
-    endpointRegistry := endpoint.NewRegistry()
+    endpointRegistry := platform.NewRegistry()
     inboundRegistry := inbound.NewRegistry()
     outboundRegistry := outbound.NewRegistry()
     
@@ -61,39 +60,25 @@ func StartProxy(tag string, uuid string, server *v2b.ServerInfo) error {
     
     // 添加默认服务注册
     ctx = service.ContextWithDefaultRegistry(ctx)
-
-    // 设置日志选项
-    logFactory, err := log.NewFactory(log.Options{
-        Context: ctx,
-        Options: &log.Options{
-            Level:  "debug",
-            Output: "mixed",
-        },
-    })
-    if err != nil {
-        log_service.WithError(err).Error("Failed to create log factory")
-        return E.Cause(err, "create log factory")
-    }
     
     // 创建 box 实例
     instance, err := box.New(box.Options{
         Context: ctx,
         Options: c,
-        PlatformLogWriter: logFactory.NewPlatformWriter(),
     })
     if err != nil {
-        log_service.WithError(err).Error("Failed to create sing-box instance")
+        log.WithError(err).Error("Failed to create sing-box instance")
         return E.Cause(err, "create client")
     }
     
     err = instance.Start()
     if err != nil {
         instance.Close()
-        log_service.WithError(err).Error("Failed to start sing-box instance")
+        log.WithError(err).Error("Failed to start sing-box instance")
         return E.Cause(err, "start client")
     }
     
-    log_service.Info("Proxy started successfully")
+    log.Info("Proxy started successfully")
     client = instance
     Running = true
     return nil
